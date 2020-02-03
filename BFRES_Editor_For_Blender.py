@@ -3265,7 +3265,7 @@ def SaveBFTEX(ftex, tname, level, img, operator=None):
                 f.close()
             else:
                 # On Ubuntu, you can install nvcompress with "sudo apt install libnvtt{,-dev,-bin}".
-                subprocess.call([bpy.context.user_preferences.filepaths.temporary_directory+"nvcompress", cmd,      bpy.context.user_preferences.filepaths.temporary_directory+"process_img.tga",   bpy.context.user_preferences.filepaths.temporary_directory+"process_img.dds"])
+                subprocess.call([bpy.context.user_preferences.filepaths.temporary_directory+"nvcompress", cmd, bpy.context.user_preferences.filepaths.temporary_directory+"process_img.tga", bpy.context.user_preferences.filepaths.temporary_directory+"process_img.dds"])
                 f = open(bpy.context.user_preferences.filepaths.temporary_directory+"process_img.dds", "rb")
                 f.seek(0x80)
                 data = f.read()
