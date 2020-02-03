@@ -41,6 +41,7 @@ import bpy, struct, bmesh, numpy
 import os
 import subprocess
 import gzip
+import shutil
 from sys import platform
 
 import socket  
@@ -57,6 +58,15 @@ from bpy.types import Operator
 def copy(s):
     if platform == 'win32' or platform == 'cygwin':
         subprocess.Popen(['clip'], stdin=subprocess.PIPE).communicate(s.encode('UTF-8'))
+    elif platform == 'linux':
+        if which('xsel') is not None:
+            subprocess.Popen(['xsel', '-b'], stdin=subprocess.PIPE).communicate(s.encode('UTF-8'))
+        elif which('xclip') is not None:
+            subprocess.Popen(['xsel', '-selection', 'clipboard'], stdin=subprocess.PIPE).communicate(s.encode('UTF-8'))
+        else:
+            raise Exception('xsel and xclip does not exist. Please install either one.')
+    elif platform == 'darwin':
+        subprocess.Popen(['pbcopy'], stdin=subprocess.PIPE).communicate(s.encode('UTF-8'))
     else:
         raise Exception('Platform not supported')
 
@@ -114,7 +124,7 @@ if platform == "win32":
     del exc
 elif platform == "darwin":
     None
-elif platform == "linux2":
+elif platform == "linux":
     None
     
 sock = None
@@ -3247,16 +3257,12 @@ def SaveBFTEX(ftex, tname, level, img, operator=None):
                     tga_file.write(struct.pack("BBBB", int(round(b*255)), int(round(g*255)), int(round(r*255)), int(round(a*255))))
             print("")
             tga_file.close()
-            if platform == "win32":
-                subprocess.call([bpy.context.user_preferences.filepaths.temporary_directory+"nvcompress.exe", cmd, bpy.context.user_preferences.filepaths.temporary_directory+"process_img.tga", bpy.context.user_preferences.filepaths.temporary_directory+"process_img.dds"])
-                f = open(bpy.context.user_preferences.filepaths.temporary_directory+"process_img.dds", "rb")
-                f.seek(0x80)
-                data = f.read()
-                f.close()
-            else:
-                if operator is not None: operator.report({'ERROR'}, "Invalid platform \"%s\"" % platform)
-                print("\tError: Invalid platform \"%s\"" % platform)
-                return
+            # On Ubuntu, you can install nvcompress with "sudo apt install libnvtt{,-dev,-bin}".
+            subprocess.call([bpy.context.user_preferences.filepaths.temporary_directory+"nvcompress", cmd, bpy.context.user_preferences.filepaths.temporary_directory+"process_img.tga", bpy.context.user_preferences.filepaths.temporary_directory+"process_img.dds"])
+            f = open(bpy.context.user_preferences.filepaths.temporary_directory+"process_img.dds", "rb")
+            f.seek(0x80)
+            data = f.read()
+            f.close()
             if cmd == "-bc2":
                 fixData = b''
                 while len(fixData) < len(data):
