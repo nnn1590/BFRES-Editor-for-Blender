@@ -3257,12 +3257,19 @@ def SaveBFTEX(ftex, tname, level, img, operator=None):
                     tga_file.write(struct.pack("BBBB", int(round(b*255)), int(round(g*255)), int(round(r*255)), int(round(a*255))))
             print("")
             tga_file.close()
-            # On Ubuntu, you can install nvcompress with "sudo apt install libnvtt{,-dev,-bin}".
-            subprocess.call([bpy.context.user_preferences.filepaths.temporary_directory+"nvcompress", cmd, bpy.context.user_preferences.filepaths.temporary_directory+"process_img.tga", bpy.context.user_preferences.filepaths.temporary_directory+"process_img.dds"])
-            f = open(bpy.context.user_preferences.filepaths.temporary_directory+"process_img.dds", "rb")
-            f.seek(0x80)
-            data = f.read()
-            f.close()
+            if platform == "win32":
+                subprocess.call([bpy.context.user_preferences.filepaths.temporary_directory+"nvcompress.exe", cmd, bpy.context.user_preferences.filepaths.temporary_directory+"process_img.tga", bpy.context.user_preferences.filepaths.temporary_directory+"process_img.dds"])
+                f = open(bpy.context.user_preferences.filepaths.temporary_directory+"process_img.dds", "rb")
+                f.seek(0x80)
+                data = f.read()
+                f.close()
+            else:
+                # On Ubuntu, you can install nvcompress with "sudo apt install libnvtt{,-dev,-bin}".
+                subprocess.call([bpy.context.user_preferences.filepaths.temporary_directory+"nvcompress", cmd,      bpy.context.user_preferences.filepaths.temporary_directory+"process_img.tga",   bpy.context.user_preferences.filepaths.temporary_directory+"process_img.dds"])
+                f = open(bpy.context.user_preferences.filepaths.temporary_directory+"process_img.dds", "rb")
+                f.seek(0x80)
+                data = f.read()
+                f.close()
             if cmd == "-bc2":
                 fixData = b''
                 while len(fixData) < len(data):
